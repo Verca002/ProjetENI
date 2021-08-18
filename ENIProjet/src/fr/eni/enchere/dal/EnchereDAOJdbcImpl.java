@@ -1,16 +1,20 @@
 package fr.eni.enchere.dal;
 
 import java.sql.Connection;
+
+
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import fr.eni.enchere.bo.Enchere;
+import fr.eni.enchere.dal.CodesResultatDAL;
+import fr.eni.encheres.BusinessException;
 
 public class EnchereDAOJdbcImpl implements EnchereDAO {
 
@@ -19,20 +23,32 @@ public class EnchereDAOJdbcImpl implements EnchereDAO {
 	private static final String SELECT_ENCHERE = "select * from ENCHERES";
 	
 	
-
-	public void insert(Enchere enchere) throws SQLException {
+	@Override
+	public void insert(Enchere enchere) throws BusinessException {
 
 		try (Connection cnx = ConnectionProvider.getConnection()) {
-			LocalDate date = null;
-			date.getDayOfWeek();
-			PreparedStatement rqt = null;
+			if(enchere==null)
+			{
+				BusinessException businessException = new BusinessException();
+				businessException.ajouterErreur(CodesResultatDAL.INSERT_OBJET_NULL);
+				throw businessException;
+			}
+			
 			try {
-				rqt = cnx.prepareStatement(INSERT_ENCHERE);
+				cnx.setAutoCommit(false);
+				LocalDate date = null;
+				date.getDayOfWeek();
+	
+				 PreparedStatement rqt = cnx.prepareStatement(INSERT_ENCHERE);
 				rqt.setDate(1, java.sql.Date.valueOf(enchere.getDateEnchere()));
 				rqt.setInt(2, enchere.getMontant_enchere());
+				rqt.executeUpdate();
 			} finally {
 				cnx.commit();
 			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
