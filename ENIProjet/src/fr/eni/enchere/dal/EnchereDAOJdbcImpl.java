@@ -4,6 +4,7 @@ import java.sql.Connection;
 
 
 
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.eni.enchere.bo.Enchere;
+import fr.eni.enchere.bo.Utilisateur;
 import fr.eni.enchere.dal.CodesResultatDAL;
 import fr.eni.encheres.BusinessException;
 
@@ -20,7 +22,7 @@ public class EnchereDAOJdbcImpl implements EnchereDAO {
 
 	private static final String INSERT_ENCHERE = "insert into ENCHERES (date_enchere, montant_enchere) values(?,?)";
 
-	private static final String SELECT_ENCHERE = "select * from ENCHERES";
+	private static final String SELECT_ALL_ENCHERE = "select * from ENCHERES";
 	
 	
 	@Override
@@ -55,24 +57,15 @@ public class EnchereDAOJdbcImpl implements EnchereDAO {
 	public List<Enchere> selectAll() throws SQLException {
 		List<Enchere> liste = new ArrayList<Enchere>();
 		try (Connection cnx = ConnectionProvider.getConnection()) {
-			Statement rqt = null;
-			ResultSet rs = null;
+			PreparedStatement pstmt = cnx.prepareStatement(SELECT_ALL_ENCHERE);
 			
-			try {
-				rqt = cnx.createStatement();
-				rs = rqt.executeQuery(SELECT_ENCHERE);
-				Enchere enchere = null;
-				while (rs.next()) {
+			ResultSet rs = pstmt.executeQuery();
+			Enchere enchere;
+			while(rs.next()) {
 					enchere = new Enchere( rs.getDate("date_enchere"), rs.getInt("montant_enchere"));
+					liste.add(enchere);
 				}
-				liste.add(enchere);
-			} finally {
-				rqt.close();
-			}
-			cnx.close();
+				
 		}
 		return liste;
-	}
-	
-}
-
+	}}
